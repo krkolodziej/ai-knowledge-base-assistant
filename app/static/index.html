@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Knowledge Base Assistant</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>AI Knowledge Base Assistant</h1>
+      </div>
+      <div class="status-pill" id="healthStatus">Checking API</div>
+    </header>
+
+    <main class="layout">
+      <section class="panel document-panel" aria-labelledby="addDocumentTitle">
+        <div class="section-header">
+          <div>
+            <h2 id="addDocumentTitle">Add Document</h2>
+          </div>
+          <button class="secondary-button" id="refreshButton" type="button">Refresh</button>
+        </div>
+
+        <form id="documentForm" class="stack">
+          <label>
+            Title
+            <input id="documentTitle" name="title" type="text" maxlength="255" required />
+          </label>
+
+          <label>
+            Type
+            <select id="contentType" name="content_type">
+              <option value="text/plain">Plain text</option>
+              <option value="text/markdown">Markdown</option>
+            </select>
+          </label>
+
+          <label>
+            Content
+            <textarea id="documentContent" name="content" required></textarea>
+          </label>
+
+          <label>
+            Source label
+            <input id="sourceLabel" name="source" type="text" placeholder="notes.md" />
+          </label>
+
+          <button class="primary-button" id="createButton" type="submit">Add document</button>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="documentsTitle">
+        <div class="section-header">
+          <div>
+            <h2 id="documentsTitle">Documents</h2>
+          </div>
+          <span class="count-badge" id="documentCount">0</span>
+        </div>
+
+        <div class="document-list" id="documentList"></div>
+      </section>
+
+      <section class="panel ask-panel" aria-labelledby="askTitle">
+        <div class="section-header">
+          <div>
+            <h2 id="askTitle">Ask</h2>
+          </div>
+          <label class="compact-field">
+            Top K
+            <input id="topK" type="number" min="1" max="20" value="5" />
+          </label>
+        </div>
+
+        <form id="questionForm" class="question-form">
+          <textarea id="questionInput" required placeholder="What does this knowledge base say?"></textarea>
+          <button class="primary-button" id="askButton" type="submit">Ask question</button>
+        </form>
+
+        <div class="answer-block" id="answerBlock" hidden>
+          <h3>Answer</h3>
+          <p id="answerText"></p>
+          <div class="trace-panel" id="tracePanel" hidden>
+            <h3>Activity</h3>
+            <div class="trace-grid" id="traceStats"></div>
+            <ol class="trace-list" id="traceList"></ol>
+          </div>
+          <div class="source-list" id="sourceList"></div>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
