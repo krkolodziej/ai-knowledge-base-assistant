@@ -79,13 +79,12 @@
         </form>
 
         <div class="answer-block" id="answerBlock" hidden>
+          <div class="loading-block" id="loadingBlock" hidden>
+            <span class="loader" aria-hidden="true"></span>
+            <span>Waiting for the answer...</span>
+          </div>
           <h3>Answer</h3>
           <p id="answerText"></p>
-          <div class="trace-panel" id="tracePanel" hidden>
-            <h3>Activity</h3>
-            <div class="trace-grid" id="traceStats"></div>
-            <ol class="trace-list" id="traceList"></ol>
-          </div>
           <div class="source-list" id="sourceList"></div>
         </div>
       </section>

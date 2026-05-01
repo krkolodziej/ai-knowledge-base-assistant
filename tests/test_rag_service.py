@@ -92,15 +92,6 @@ def test_rag_service_builds_prompt_and_returns_answer_with_sources() -> None:
     assert result.sources == [make_chunk()]
     assert result.chat_model == "test-chat"
     assert result.embedding_model == "test-embed"
-    assert result.trace.top_k == 3
-    assert result.trace.retrieved_chunks == 1
-    assert result.trace.context_characters == len(make_chunk().content)
-    assert result.trace.steps == [
-        "question_embedding_generated",
-        "similar_chunks_retrieved",
-        "prompt_built",
-        "answer_generated",
-    ]
 
 
 def test_rag_service_returns_safe_answer_when_no_sources_are_found() -> None:
@@ -115,12 +106,6 @@ def test_rag_service_returns_safe_answer_when_no_sources_are_found() -> None:
 
     assert result.answer == "I do not know based on the indexed documents."
     assert result.sources == []
-    assert result.trace.retrieved_chunks == 0
-    assert result.trace.steps == [
-        "question_embedding_generated",
-        "similar_chunks_retrieved",
-        "generation_skipped_no_sources",
-    ]
     assert generation_client.prompt is None
 
 

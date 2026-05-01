@@ -2,8 +2,6 @@ const API_PREFIX = "/api/v1";
 
 const state = {
   documents: [],
-  pendingTraceTimer: null,
-  pendingTraceIndex: 0,
 };
 
 const elements = {
@@ -23,27 +21,10 @@ const elements = {
   askButton: document.querySelector("#askButton"),
   answerBlock: document.querySelector("#answerBlock"),
   answerText: document.querySelector("#answerText"),
-  tracePanel: document.querySelector("#tracePanel"),
-  traceStats: document.querySelector("#traceStats"),
-  traceList: document.querySelector("#traceList"),
+  loadingBlock: document.querySelector("#loadingBlock"),
   sourceList: document.querySelector("#sourceList"),
   toast: document.querySelector("#toast"),
 };
-
-const TRACE_LABELS = {
-  question_embedding_generated: "Question embedding generated",
-  similar_chunks_retrieved: "Similar chunks retrieved",
-  prompt_built: "Prompt built",
-  answer_generated: "Answer generated",
-  generation_skipped_no_sources: "Generation skipped",
-};
-
-const PENDING_TRACE_STEPS = [
-  "Generating question embedding",
-  "Searching pgvector chunks",
-  "Building prompt",
-  "Asking Ollama",
-];
 
 async function requestJson(path, options = {}) {
   const response = await fetch(`${API_PREFIX}${path}`, {
@@ -201,7 +182,7 @@ async function indexDocument(documentId, button) {
 async function askQuestion(event) {
   event.preventDefault();
   setBusy(elements.askButton, true, { idle: "Ask question", busy: "Asking" });
-  startPendingTrace();
+  showLoading();
 
   try {
     const result = await requestJson("/questions", {
@@ -211,11 +192,9 @@ async function askQuestion(event) {
         top_k: Number(elements.topK.value),
       }),
     });
-    stopPendingTrace();
     renderAnswer(result);
   } catch (error) {
-    stopPendingTrace();
-    markPendingTraceFailed();
+    hideLoading();
     showToast(error.message, true);
   } finally {
     setBusy(elements.askButton, false, { idle: "Ask question", busy: "Asking" });
@@ -224,9 +203,9 @@ async function askQuestion(event) {
 
 function renderAnswer(result) {
   elements.answerBlock.hidden = false;
+  hideLoading();
   elements.answerText.textContent = result.answer;
   elements.sourceList.innerHTML = "";
-  renderTrace(result.trace);
 
   if (result.sources.length === 0) {
     const emptyState = document.createElement("div");
@@ -259,77 +238,15 @@ function renderAnswer(result) {
   });
 }
 
-function startPendingTrace() {
-  stopPendingTrace();
-  state.pendingTraceIndex = 0;
+function showLoading() {
   elements.answerBlock.hidden = false;
   elements.answerText.textContent = "";
   elements.sourceList.innerHTML = "";
-  elements.tracePanel.hidden = false;
-  elements.traceStats.innerHTML = "";
-  elements.traceList.innerHTML = "";
-
-  PENDING_TRACE_STEPS.forEach((step, index) => {
-    const item = document.createElement("li");
-    item.className = index === 0 ? "trace-step is-active" : "trace-step";
-    item.textContent = step;
-    elements.traceList.append(item);
-  });
-
-  state.pendingTraceTimer = window.setInterval(advancePendingTrace, 900);
+  elements.loadingBlock.hidden = false;
 }
 
-function advancePendingTrace() {
-  if (state.pendingTraceIndex >= PENDING_TRACE_STEPS.length - 1) {
-    return;
-  }
-
-  const steps = [...elements.traceList.querySelectorAll(".trace-step")];
-  steps[state.pendingTraceIndex].classList.remove("is-active");
-  steps[state.pendingTraceIndex].classList.add("is-complete");
-  state.pendingTraceIndex += 1;
-  steps[state.pendingTraceIndex].classList.add("is-active");
-}
-
-function stopPendingTrace() {
-  if (state.pendingTraceTimer) {
-    window.clearInterval(state.pendingTraceTimer);
-    state.pendingTraceTimer = null;
-  }
-}
-
-function markPendingTraceFailed() {
-  const activeStep = elements.traceList.querySelector(".trace-step.is-active");
-  if (activeStep) {
-    activeStep.classList.remove("is-active");
-    activeStep.classList.add("is-error");
-  }
-}
-
-function renderTrace(trace) {
-  elements.tracePanel.hidden = false;
-  elements.traceStats.innerHTML = "";
-  elements.traceList.innerHTML = "";
-
-  const stats = [
-    ["top_k", trace.top_k],
-    ["chunks", trace.retrieved_chunks],
-    ["context chars", trace.context_characters],
-  ];
-
-  stats.forEach(([label, value]) => {
-    const item = document.createElement("div");
-    item.className = "trace-stat";
-    item.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
-    elements.traceStats.append(item);
-  });
-
-  trace.steps.forEach((step) => {
-    const item = document.createElement("li");
-    item.className = "trace-step is-complete";
-    item.textContent = TRACE_LABELS[step] || step;
-    elements.traceList.append(item);
-  });
+function hideLoading() {
+  elements.loadingBlock.hidden = true;
 }
 
 elements.documentForm.addEventListener("submit", createDocument);

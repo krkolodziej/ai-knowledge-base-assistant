@@ -43,22 +43,6 @@ class RetrievedChunkResponse(BaseModel):
         )
 
 
-class RagTraceResponse(BaseModel):
-    top_k: int
-    retrieved_chunks: int
-    context_characters: int
-    steps: list[str]
-
-    @classmethod
-    def from_trace(cls, trace: Any) -> Self:
-        return cls(
-            top_k=trace.top_k,
-            retrieved_chunks=trace.retrieved_chunks,
-            context_characters=trace.context_characters,
-            steps=trace.steps,
-        )
-
-
 class QuestionAnswerResponse(BaseModel):
     question: str
     answer: str
@@ -66,4 +50,3 @@ class QuestionAnswerResponse(BaseModel):
     embedding_model: str
     sources: list[RetrievedChunkResponse]
     source_count: int
-    trace: RagTraceResponse

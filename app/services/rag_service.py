@@ -37,21 +37,12 @@ class TextGenerationClient(Protocol):
 
 
 @dataclass(frozen=True)
-class RagTrace:
-    top_k: int
-    retrieved_chunks: int
-    context_characters: int
-    steps: list[str]
-
-
-@dataclass(frozen=True)
 class RagResult:
     question: str
     answer: str
     sources: list[RetrievedChunk]
     chat_model: str
     embedding_model: str
-    trace: RagTrace
 
 
 class RagService:
@@ -80,20 +71,9 @@ class RagService:
                 sources=[],
                 chat_model=self.chat_model,
                 embedding_model=retrieval_result.embedding_model,
-                trace=RagTrace(
-                    top_k=top_k,
-                    retrieved_chunks=0,
-                    context_characters=0,
-                    steps=[
-                        "question_embedding_generated",
-                        "similar_chunks_retrieved",
-                        "generation_skipped_no_sources",
-                    ],
-                ),
             )
 
         prompt = self._build_prompt(retrieval_result)
-        context_characters = sum(len(chunk.content) for chunk in retrieval_result.chunks)
 
         try:
             answer = self.generation_client.generate(model=self.chat_model, prompt=prompt)
@@ -106,17 +86,6 @@ class RagService:
             sources=retrieval_result.chunks,
             chat_model=self.chat_model,
             embedding_model=retrieval_result.embedding_model,
-            trace=RagTrace(
-                top_k=top_k,
-                retrieved_chunks=len(retrieval_result.chunks),
-                context_characters=context_characters,
-                steps=[
-                    "question_embedding_generated",
-                    "similar_chunks_retrieved",
-                    "prompt_built",
-                    "answer_generated",
-                ],
-            ),
         )
 
     def _build_prompt(self, retrieval_result: RetrievalResult) -> str:

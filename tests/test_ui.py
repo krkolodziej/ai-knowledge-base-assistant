@@ -10,5 +10,5 @@ def test_ui_index_is_served() -> None:
 
     assert response.status_code == 200
     assert "AI Knowledge Base Assistant" in response.text
-    assert "Activity" in response.text
+    assert "Waiting for the answer" in response.text
     assert "/static/app.js" in response.text

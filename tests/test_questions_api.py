@@ -9,7 +9,6 @@ from app.services.rag_service import (
     RagGenerationError,
     RagResult,
     RagRetrievalError,
-    RagTrace,
 )
 from app.services.retrieval_service import RetrievedChunk
 
@@ -49,17 +48,6 @@ class FakeRagService:
                     similarity=0.8,
                 )
             ][:top_k],
-            trace=RagTrace(
-                top_k=top_k,
-                retrieved_chunks=1,
-                context_characters=49,
-                steps=[
-                    "question_embedding_generated",
-                    "similar_chunks_retrieved",
-                    "prompt_built",
-                    "answer_generated",
-                ],
-            ),
         )
 
 
@@ -94,17 +82,6 @@ def test_answer_question_returns_answer_with_sources() -> None:
             }
         ],
         "source_count": 1,
-        "trace": {
-            "top_k": 3,
-            "retrieved_chunks": 1,
-            "context_characters": 49,
-            "steps": [
-                "question_embedding_generated",
-                "similar_chunks_retrieved",
-                "prompt_built",
-                "answer_generated",
-            ],
-        },
     }
 
 

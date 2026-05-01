@@ -128,7 +128,7 @@ http://localhost:8000/
 ```
 
 Panel pozwala dodać dokument, odświeżyć listę, uruchomić indeksację i zadać pytanie.
-Po odpowiedzi pokazuje też `Activity`, czyli techniczny trace pipeline'u RAG.
+Podczas generowania odpowiedzi pokazuje prosty stan oczekiwania.
 
 Ten sam przepływ można wykonać curlami:
 
@@ -195,24 +195,12 @@ Przykładowy kształt odpowiedzi:
       "similarity": 0.88
     }
   ],
-  "source_count": 1,
-  "trace": {
-    "top_k": 5,
-    "retrieved_chunks": 1,
-    "context_characters": 72,
-    "steps": [
-      "question_embedding_generated",
-      "similar_chunks_retrieved",
-      "prompt_built",
-      "answer_generated"
-    ]
-  }
+  "source_count": 1
 }
 ```
 
 `distance` to dystans kosinusowy z pgvector: im niższy, tym lepiej.
 `similarity` jest liczone jako `1.0 - distance`: im wyższe, tym lepiej.
-`trace` pokazuje techniczne kroki RAG, a nie prywatne lub surowe myśli modelu.
 
 ## Testy i linting
 

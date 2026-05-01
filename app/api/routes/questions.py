@@ -6,7 +6,6 @@ from app.api.dependencies import get_rag_service
 from app.schemas.question import (
     QuestionAnswerResponse,
     QuestionCreate,
-    RagTraceResponse,
     RetrievedChunkResponse,
 )
 from app.services.rag_service import (
@@ -49,5 +48,4 @@ def answer_question(
         embedding_model=result.embedding_model,
         sources=sources,
         source_count=len(sources),
-        trace=RagTraceResponse.from_trace(result.trace),
     )
