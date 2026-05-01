@@ -198,7 +198,8 @@ button:disabled {
 }
 
 .secondary-button,
-.index-button {
+.index-button,
+.delete-button {
   border-color: var(--border);
   background: var(--surface-muted);
   color: var(--text);
@@ -207,6 +208,11 @@ button:disabled {
 .secondary-button:hover:not(:disabled),
 .index-button:hover:not(:disabled) {
   border-color: var(--primary);
+}
+
+.delete-button:hover:not(:disabled) {
+  border-color: #fecaca;
+  color: var(--danger);
 }
 
 .compact-field {

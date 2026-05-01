@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from app.api.dependencies import get_document_service, get_indexing_service
 from app.main import create_app
+from app.services.document_service import DocumentNotFoundError as DocumentServiceNotFoundError
 from app.services.document_service import DocumentServiceError
 from app.services.indexing_service import (
     DocumentEmbeddingError,
@@ -31,7 +32,13 @@ def make_document(**overrides: object) -> SimpleNamespace:
 
 
 class FakeDocumentService:
-    def __init__(self, *, raise_error: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        raise_delete_not_found: bool = False,
+        raise_error: bool = False,
+    ) -> None:
+        self.raise_delete_not_found = raise_delete_not_found
         self.raise_error = raise_error
         self.documents = [make_document()]
 
@@ -49,6 +56,12 @@ class FakeDocumentService:
         if self.raise_error:
             raise DocumentServiceError("Could not list documents.")
         return self.documents
+
+    def delete_document(self, document_id: uuid.UUID) -> None:
+        if self.raise_delete_not_found:
+            raise DocumentServiceNotFoundError("Document not found.")
+        if self.raise_error:
+            raise DocumentServiceError("Could not delete document.")
 
 
 class FakeIndexingService:
@@ -229,5 +242,32 @@ def test_index_document_returns_500_when_indexing_fails() -> None:
     )
 
     response = client.post("/api/v1/documents/11111111-1111-1111-1111-111111111111/index")
+
+    assert response.status_code == 500
+
+
+def test_delete_document_returns_204() -> None:
+    client = create_test_client()
+
+    response = client.delete("/api/v1/documents/11111111-1111-1111-1111-111111111111")
+
+    assert response.status_code == 204
+    assert response.content == b""
+
+
+def test_delete_document_returns_404_when_document_does_not_exist() -> None:
+    client = create_test_client(
+        service=FakeDocumentService(raise_delete_not_found=True)
+    )
+
+    response = client.delete("/api/v1/documents/11111111-1111-1111-1111-111111111111")
+
+    assert response.status_code == 404
+
+
+def test_delete_document_returns_500_when_service_fails() -> None:
+    client = create_test_client(service=FakeDocumentService(raise_error=True))
+
+    response = client.delete("/api/v1/documents/11111111-1111-1111-1111-111111111111")
 
     assert response.status_code == 500

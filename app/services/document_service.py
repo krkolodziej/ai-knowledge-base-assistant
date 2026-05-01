@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -7,6 +9,10 @@ from app.schemas.document import DocumentCreate
 
 
 class DocumentServiceError(Exception):
+    pass
+
+
+class DocumentNotFoundError(DocumentServiceError):
     pass
 
 
@@ -39,3 +45,15 @@ class DocumentService:
             return self.documents.list()
         except SQLAlchemyError as exc:
             raise DocumentServiceError("Could not list documents.") from exc
+
+    def delete_document(self, document_id: uuid.UUID) -> None:
+        document = self.documents.get_by_id(document_id)
+        if document is None:
+            raise DocumentNotFoundError("Document not found.")
+
+        try:
+            self.documents.delete(document)
+            self.db.commit()
+        except SQLAlchemyError as exc:
+            self.db.rollback()
+            raise DocumentServiceError("Could not delete document.") from exc

@@ -22,3 +22,7 @@ class DocumentRepository:
     def list(self) -> list[Document]:
         statement = select(Document).order_by(Document.created_at.desc())
         return list(self.db.scalars(statement).all())
+
+    def delete(self, document: Document) -> None:
+        self.db.delete(document)
+        self.db.flush()

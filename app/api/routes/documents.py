@@ -11,12 +11,17 @@ from app.schemas.document import (
     DocumentResponse,
     DocumentSummary,
 )
+from app.services.document_service import (
+    DocumentNotFoundError as DocumentServiceNotFoundError,
+)
 from app.services.document_service import DocumentService, DocumentServiceError
 from app.services.indexing_service import (
     DocumentEmbeddingError,
     DocumentIndexingError,
-    DocumentNotFoundError,
     IndexingService,
+)
+from app.services.indexing_service import (
+    DocumentNotFoundError as IndexingDocumentNotFoundError,
 )
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -54,6 +59,25 @@ def list_documents(
     return DocumentListResponse(items=items, total=len(items))
 
 
+@router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_document(
+    document_id: uuid.UUID,
+    service: Annotated[DocumentService, Depends(get_document_service)],
+) -> None:
+    try:
+        service.delete_document(document_id)
+    except DocumentServiceNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+    except DocumentServiceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
+
+
 @router.post("/{document_id}/index", response_model=DocumentIndexResponse)
 def index_document(
     document_id: uuid.UUID,
@@ -61,7 +85,7 @@ def index_document(
 ) -> DocumentIndexResponse:
     try:
         result = service.index_document(document_id)
-    except DocumentNotFoundError as exc:
+    except IndexingDocumentNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),

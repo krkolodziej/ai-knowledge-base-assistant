@@ -13,6 +13,7 @@ Ollamę, pgvector similarity search oraz testy bez zależności od zewnętrznego
 - `GET /api/v1/health` - healthcheck aplikacji.
 - `POST /api/v1/documents` - dodanie dokumentu tekstowego lub Markdown.
 - `GET /api/v1/documents` - lista dokumentów bez pełnej treści.
+- `DELETE /api/v1/documents/{document_id}` - usunięcie dokumentu i jego chunków.
 - `POST /api/v1/documents/{document_id}/index` - chunking, embeddingi i zapis chunków.
 - `POST /api/v1/questions` - prosty pipeline RAG: retrieval, prompt, odpowiedź i źródła.
 - `GET /` - prosty panel webowy do pracy z dokumentami i pytaniami.

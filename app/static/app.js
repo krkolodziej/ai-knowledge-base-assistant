@@ -129,7 +129,15 @@ function renderDocuments() {
     indexButton.textContent = documentItem.status === "indexed" ? "Re-index" : "Index";
     indexButton.addEventListener("click", () => indexDocument(documentItem.id, indexButton));
 
-    actions.append(status, indexButton);
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "delete-button";
+    deleteButton.type = "button";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () =>
+      deleteDocument(documentItem.id, documentItem.title, deleteButton)
+    );
+
+    actions.append(status, indexButton, deleteButton);
     item.append(title, meta, actions);
     elements.documentList.append(item);
   }
@@ -176,6 +184,31 @@ async function indexDocument(documentId, button) {
     showToast(error.message, true);
   } finally {
     setBusy(button, false, { idle: "Index", busy: "Indexing" });
+  }
+}
+
+async function deleteDocument(documentId, title, button) {
+  const confirmed = window.confirm(`Delete "${title}" and all indexed chunks?`);
+  if (!confirmed) {
+    return;
+  }
+
+  setBusy(button, true, { idle: "Delete", busy: "Deleting" });
+
+  try {
+    await fetch(`${API_PREFIX}/documents/${documentId}`, {
+      method: "DELETE",
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error(`Delete failed with status ${response.status}`);
+      }
+    });
+    await loadDocuments();
+    showToast("Document deleted.");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setBusy(button, false, { idle: "Delete", busy: "Deleting" });
   }
 }
 
