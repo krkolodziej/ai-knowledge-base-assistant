@@ -58,7 +58,9 @@ class IndexingService:
                 [text_chunk.content for text_chunk in text_chunks]
             )
         except EmbeddingServiceError as exc:
-            raise DocumentEmbeddingError("Could not generate embeddings with Ollama.") from exc
+            raise DocumentEmbeddingError(
+                f"Could not generate embeddings with Ollama. {exc}"
+            ) from exc
 
         chunk_models = [
             DocumentChunk(

@@ -59,7 +59,7 @@ class RetrievalService:
             question_embedding = self.embedding_service.embed_texts([question])[0]
         except EmbeddingServiceError as exc:
             raise RetrievalEmbeddingError(
-                "Could not generate question embedding with Ollama."
+                f"Could not generate question embedding with Ollama. {exc}"
             ) from exc
 
         try:

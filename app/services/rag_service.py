@@ -60,7 +60,9 @@ class RagService:
         try:
             retrieval_result = self.retrieval_service.retrieve(question=question, top_k=top_k)
         except RetrievalEmbeddingError as exc:
-            raise RagEmbeddingError("Could not generate question embedding with Ollama.") from exc
+            raise RagEmbeddingError(
+                f"Could not generate question embedding with Ollama. {exc}"
+            ) from exc
         except RetrievalError as exc:
             raise RagRetrievalError("Could not retrieve context for the question.") from exc
 
@@ -78,7 +80,7 @@ class RagService:
         try:
             answer = self.generation_client.generate(model=self.chat_model, prompt=prompt)
         except OllamaClientError as exc:
-            raise RagGenerationError("Could not generate answer with Ollama.") from exc
+            raise RagGenerationError(f"Could not generate answer with Ollama. {exc}") from exc
 
         return RagResult(
             question=question,

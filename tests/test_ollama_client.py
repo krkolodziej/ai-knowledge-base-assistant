@@ -1,3 +1,4 @@
+import httpx
 import pytest
 
 from app.services.ollama_client import OllamaClient, OllamaClientError
@@ -52,3 +53,18 @@ def test_ollama_client_rejects_generation_response_without_text() -> None:
 
     with pytest.raises(OllamaClientError):
         client._parse_generation({"done": True})
+
+
+def test_ollama_client_formats_http_status_error_with_response_body() -> None:
+    client = OllamaClient(base_url="http://localhost:11434", timeout_seconds=1)
+    response = httpx.Response(
+        status_code=404,
+        text='{"error":"model not found"}',
+        request=httpx.Request("POST", "http://localhost:11434/api/generate"),
+    )
+
+    message = client._format_status_error("Ollama generation request", response)
+
+    assert message == (
+        'Ollama generation request failed with status 404: {"error":"model not found"}'
+    )

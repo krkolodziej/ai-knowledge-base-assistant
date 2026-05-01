@@ -21,16 +21,7 @@ class OllamaClient:
             "input": texts,
         }
 
-        try:
-            response = httpx.post(
-                f"{self.base_url}/api/embed",
-                json=payload,
-                timeout=self.timeout_seconds,
-            )
-            response.raise_for_status()
-        except httpx.HTTPError as exc:
-            raise OllamaClientError("Ollama embedding request failed.") from exc
-
+        response = self._post_json("/api/embed", payload, "Ollama embedding request")
         data = response.json()
         return self._parse_embeddings(data)
 
@@ -41,18 +32,43 @@ class OllamaClient:
             "stream": False,
         }
 
+        response = self._post_json("/api/generate", payload, "Ollama generation request")
+        data = response.json()
+        return self._parse_generation(data)
+
+    def _post_json(
+        self,
+        path: str,
+        payload: dict[str, Any],
+        error_label: str,
+    ) -> httpx.Response:
         try:
             response = httpx.post(
-                f"{self.base_url}/api/generate",
+                f"{self.base_url}{path}",
                 json=payload,
                 timeout=self.timeout_seconds,
             )
             response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise OllamaClientError(
+                self._format_status_error(error_label, exc.response)
+            ) from exc
+        except httpx.TimeoutException as exc:
+            raise OllamaClientError(
+                f"{error_label} timed out after {self.timeout_seconds} seconds."
+            ) from exc
         except httpx.HTTPError as exc:
-            raise OllamaClientError("Ollama generation request failed.") from exc
+            raise OllamaClientError(f"{error_label} failed: {exc}") from exc
 
-        data = response.json()
-        return self._parse_generation(data)
+        return response
+
+    def _format_status_error(self, error_label: str, response: httpx.Response) -> str:
+        body = response.text.strip()
+        if len(body) > 300:
+            body = f"{body[:300]}..."
+
+        reason = body or response.reason_phrase
+        return f"{error_label} failed with status {response.status_code}: {reason}"
 
     def _parse_embeddings(self, data: dict[str, Any]) -> list[list[float]]:
         embeddings = data.get("embeddings")

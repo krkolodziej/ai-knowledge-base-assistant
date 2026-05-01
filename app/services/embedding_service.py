@@ -20,7 +20,7 @@ class EmbeddingService:
         try:
             embeddings = self.client.embed(model=self.model, texts=texts)
         except OllamaClientError as exc:
-            raise EmbeddingServiceError("Could not generate embeddings.") from exc
+            raise EmbeddingServiceError(f"Could not generate embeddings. {exc}") from exc
 
         if len(embeddings) != len(texts):
             raise EmbeddingServiceError("Embedding count does not match text count.")
